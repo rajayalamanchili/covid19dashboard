@@ -1,0 +1,1 @@
+web: streamlit run app/covid_19_app.py
