@@ -51,7 +51,7 @@ class Covid19Data:
         return outputDF
 
     def aggregateAllDataByCountryName(self,countryName="Canada"):
-        outputDF = pd.DataFrame(columns=["confirmed","deaths","recovered"])
+        outputDF = pd.DataFrame(columns=["confirmed","recovered","deaths"])
         outputDF["confirmed"] = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"]).transpose()[countryName]
         outputDF["deaths"] = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"]).transpose()[countryName]
         outputDF["recovered"] = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"]).transpose()[countryName]
