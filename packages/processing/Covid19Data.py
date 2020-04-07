@@ -69,7 +69,7 @@ class Covid19Data:
                     .format(self.confDF.iloc[:,-1].sum(),self.dtsDF.iloc[:,-1].sum(),self.recoveredDF.iloc[:,-1].sum())
         for cname in countryNameOptions:
             countryCumTotals = self.aggregateAllDataByCountryName(cname).iloc[-1,:]
-            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} && \\normalsize {:,} \\cr[1pt]""" \
+            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
                         .format(cname, countryCumTotals[0], countryCumTotals[1], countryCumTotals[2])
         outputStr += """\\end{matrix}"""
                         
