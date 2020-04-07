@@ -61,6 +61,21 @@ class Covid19Data:
         
         return outputDF
     
+    def getCumulativeDataSummary(self,countryNameOptions="Canada"):
+        
+        outputStr = """\\begin{matrix}"""
+        outputStr += """\\scriptsize \\bf {} && \\large \\bf Confirmed && \\large \\bf Recovered && \\large \\bf Deaths \\cr[5pt]""".format(self.confDF.columns[-1])
+        outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
+                    .format(self.confDF.iloc[:,-1].sum(),self.dtsDF.iloc[:,-1].sum(),self.recoveredDF.iloc[:,-1].sum())
+        for cname in countryNameOptions:
+            countryCumTotals = self.aggregateAllDataByCountryName(cname).iloc[-1,:]
+            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} && \\normalsize {:,} \\cr[1pt]""" \
+                        .format(cname, countryCumTotals[0], countryCumTotals[1], countryCumTotals[2])
+        outputStr += """\\end{matrix}"""
+                        
+                        
+        return outputStr
+    
 
 # myData = Covid19Data()
 # myData.loadData()
