@@ -64,7 +64,7 @@ class Covid19Data:
     def getCumulativeDataSummary(self,countryNameOptions="Canada"):
         
         outputStr = """\\begin{matrix}"""
-        outputStr += """\\scriptsize \\bf {} && \\large \\bf Confirmed && \\large \\bf Recovered && \\large \\bf Deaths \\cr[5pt]""".format(self.confDF.columns[-1])
+        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Recovered && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
         outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
                     .format(self.confDF.iloc[:,-1].sum(),self.dtsDF.iloc[:,-1].sum(),self.recoveredDF.iloc[:,-1].sum())
         for cname in countryNameOptions:
