@@ -38,12 +38,13 @@ fig.add_trace(
     go.Scatter(x=df.index[-30:], y=df.iloc[-30:,0], name='confirmed'),
     secondary_y=False,
 )
+
 fig.add_trace(
-    go.Scatter(x=df.index[-30:], y=df.iloc[-30:,1], name='deaths'),
+    go.Scatter(x=df.index[-30:], y=df.iloc[-30:,2], name='deaths'),
     secondary_y=False,
 )
 fig.add_trace(
-    go.Scatter(x=df.index[-30:], y=df.iloc[-30:,2], name='recovered'),
+    go.Scatter(x=df.index[-30:], y=df.iloc[-30:,1], name='recovered'),
     secondary_y=False,
 )
 

@@ -66,7 +66,7 @@ class Covid19Data:
         outputStr = """\\begin{matrix}"""
         outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Recovered && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
         outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
-                    .format(self.confDF.iloc[:,-1].sum(),self.dtsDF.iloc[:,-1].sum(),self.recoveredDF.iloc[:,-1].sum())
+                    .format(self.confDF.iloc[:,-1].sum(),self.recoveredDF.iloc[:,-1].sum(),self.dtsDF.iloc[:,-1].sum())
         for cname in countryNameOptions:
             countryCumTotals = self.aggregateAllDataByCountryName(cname).iloc[-1,:]
             outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
@@ -77,6 +77,6 @@ class Covid19Data:
         return outputStr
     
 
-# myData = Covid19Data()
-# myData.loadData()
-# print(myData.aggregateAllDataByCountryName())
+myData = Covid19Data()
+myData.loadData()
+print(myData.aggregateAllDataByCountryName())
