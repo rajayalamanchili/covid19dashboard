@@ -41,15 +41,8 @@ class Covid19Data:
         
         self.updateCountryNames()
         
+           
     
-        
-    def aggregateByCountry(inputDF):
-    
-        outputDF = pd.DataFrame(inputDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"]).transpose()
-        outputDF.index = pd.to_datetime(outputDF.index)
-        
-        return outputDF
-
     def aggregateAllDataByCountryName(self,countryName="Canada"):
         outputDF = pd.DataFrame(columns=["confirmed","recovered","deaths"])
         outputDF["confirmed"] = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"]).transpose()[countryName]
@@ -76,7 +69,47 @@ class Covid19Data:
                         
         return outputStr
     
+    def getDailyCountsByCountry(self,option="confirmed", ncases=0):
+        
+        if(option=="confirmed"):
+            outputDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        if(option=="recovered"):
+            outputDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        if(option=="deaths"):
+            outputDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        
+        # drop rows below ncases
+        outputDF = outputDF.drop(outputDF.index[outputDF.iloc[:,-1] < ncases])
+               
+        outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        
+        return outputDF
+    
+    def getDailyChangeRateByCountry(self,option="confirmed", ncases=0):
+        
+        if(option=="confirmed"):
+            outputDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        if(option=="recovered"):
+            outputDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        if(option=="deaths"):
+            outputDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        
+        # drop rows below ncases
+        outputDF = outputDF.drop(outputDF.index[outputDF.iloc[:,-1] < ncases])
+       
+       
+        for icol in range(len(outputDF.columns)-1,0,-1):
+            outputDF.iloc[:,icol] = ((outputDF.iloc[:,icol] - outputDF.iloc[:,icol-1])/outputDF.iloc[:,icol-1])*100
+        
+        
+        outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        
+        return outputDF
+    
+    
 
-myData = Covid19Data()
-myData.loadData()
-print(myData.aggregateAllDataByCountryName())
+# myData = Covid19Data()
+# myData.loadData()
+
+# print(myData.getDailyCountsByCountry("confirmed"))
+# print(myData.getDailyChangeRateByCountry("confirmed"))
