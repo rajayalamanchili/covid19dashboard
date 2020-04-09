@@ -70,26 +70,30 @@ st.plotly_chart(fig)
 st.markdown("""---""")
 
 df = myData.getDailyCountsByCountry("confirmed")
+[freq, bins] = np.histogram(df.iloc[:,-1], bins=10)
+fig = make_subplots(rows=1, cols=2,subplot_titles=("Confirmed", "Deaths"))
+fig.add_trace(
+    go.Bar(x=bins[1:], y=freq,  text=freq, textposition='outside'),
+    row=1, col=1
+)
+fig.update_xaxes(title_text="cases", row=1, col=1)
+fig.update_yaxes(title_text="number of countries", row=1, col=1)
 
-#fig = go.Figure(data=[go.Histogram(x=df.iloc[:,-1].values)])
-[freq, bins] = np.histogram(df.iloc[:,-1], bins=range(0, df.iloc[:,-1].max()+1, 20000))
-fig = go.Figure(go.Bar(x=freq[np.nonzero(freq)], y=bins[np.nonzero(freq)], orientation='h', 
-                       textposition='outside'))
+df = myData.getDailyCountsByCountry("deaths")
+[freq, bins] = np.histogram(df.iloc[:,-1], bins=10)
+fig.add_trace(
+    go.Bar(x=bins[1:], y=freq,  text=freq, textposition='outside'),
+    row=1, col=2
+)
+fig.update_xaxes(title_text="cases", row=1, col=2)
+fig.update_yaxes(title_text="number of countries",side='right', row=1, col=2)
+
 fig.update_layout(
-    title='Confirmed cases histogram',
-    xaxis=dict(
-        title='Number of countries',
-        titlefont_size=14,
-        tickfont_size=12,
-    ),
-    yaxis=dict(
-        title='Number of cases',
-        titlefont_size=14,
-        tickfont_size=12,
-    ))
-#fig = go.Figure([go.Bar(x=bins+20000, y=freq)])
-#fig = go.Figure(data=[go.Pie(labels=bins, values=freq)])
-#fig = px.histogram(df, x=df.columns[-1], nbins=100)
+    showlegend=False,
+    xaxis = dict(
+            ticks="outside"            
+        )
+    )
 
 
 st.plotly_chart(fig)
