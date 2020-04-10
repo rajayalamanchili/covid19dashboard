@@ -8,6 +8,8 @@ Created on Mon Apr  6 07:59:45 2020
 
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 class Covid19Data:
     dataUrl = []
@@ -82,6 +84,29 @@ class Covid19Data:
         outputDF = outputDF.drop(outputDF.index[outputDF.iloc[:,-1] < ncases])
                
         outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        outputDF.columns = pd.to_datetime(outputDF.columns)
+        
+        return outputDF
+    
+    def getDailyNewCasesByCountry(self,option="confirmed", ncases=0):
+        
+        if(option=="confirmed"):
+            outputDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        if(option=="recovered"):
+            outputDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        if(option=="deaths"):
+            outputDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat", "Long"])
+        
+        # drop rows below ncases
+        outputDF = outputDF.drop(outputDF.index[outputDF.iloc[:,-1] < ncases])
+       
+       
+        for icol in range(len(outputDF.columns)-1,0,-1):
+            outputDF.iloc[:,icol] = (outputDF.iloc[:,icol] - outputDF.iloc[:,icol-1])
+        
+        
+        outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        outputDF.columns = pd.to_datetime(outputDF.columns)
         
         return outputDF
     
@@ -103,13 +128,152 @@ class Covid19Data:
         
         
         outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        outputDF.columns = pd.to_datetime(outputDF.columns)
         
         return outputDF
     
+    def getCountryStatsGraph(self, countryName="Canada"):
+        
+        df = self.aggregateAllDataByCountryName(countryName)
+
+        fig = go.Figure()
+        colColors = ['#88F', '#0A3', '#F44']
+        for icol in range(len(df.columns)):
+            fig.add_trace(
+            go.Scatter(x=df.index[-30:], y=df.iloc[-30:,icol], name=df.columns[icol], line=dict(width=2, color=colColors[icol]), mode="lines+markers")
+            )
+            
+        
+        # Add figure title
+        fig.update_layout(
+            title_text="Cumulative counts per day : " + countryName
+        )
+        fig.update_layout(
+            legend=dict(
+                x=0,
+                y=1,
+                traceorder="normal",
+                font=dict(
+                    family="sans-serif",
+                    size=12,
+                    color="black"
+                ),
+                bgcolor="LightSteelBlue",
+                bordercolor="Black",
+                #borderwidth=1
+            )
+        )
+        
+        # Set x-axis title
+        #fig.update_xaxes(title_text="Date")
+        
+        return fig
+    
+    def getCountryNewCasesRatesGraph(self,countryName="Canada", option="confirmed"):
+        
+        numDays = 30
+        
+        fig = go.Figure()
+        
+        dfCounts = self.getDailyNewCasesByCountry(option)
+        fig.add_trace(
+            go.Bar(x=dfCounts.columns[-numDays:], y=dfCounts.loc[countryName, dfCounts.columns[-numDays:]], 
+                   name="Confirmed", yaxis="y") 
+            )
+        
+        dfCounts = self.getDailyNewCasesByCountry("deaths")
+        fig.add_trace(
+            go.Bar(x=dfCounts.columns[-numDays:], y=dfCounts.loc[countryName, dfCounts.columns[-numDays:]], 
+                   name="Deaths", yaxis="y") 
+            )
+        
+# =============================================================================
+#         dfRates = self.getDailyChangeRateByCountry(option)
+#         fig.add_trace(
+#             go.Scatter(x=dfRates.columns[-numDays:], y=dfRates.loc[countryName, dfCounts.columns[-numDays:]], 
+#                        name="%Change", yaxis="y2") 
+#             )
+# =============================================================================
+        
+        fig.update_layout(
+            title_text="New cases per day : " + countryName
+        )
+        fig.update_layout(
+            legend=dict(
+                x=0,
+                y=1,
+                traceorder="normal",
+                font=dict(
+                    family="sans-serif",
+                    size=12,
+                    color="black"
+                ),
+                bgcolor="LightSteelBlue",
+                bordercolor="Black",
+                #borderwidth=1
+            ),
+            yaxis=dict(
+                title='Counts'                
+            ),
+            yaxis2=dict(
+                title='%',
+                side='right',
+                overlaying="y"                
+            )
+        )
+        
+        return fig
+    
+    def getTopCountriesNewCasesGraph(self,option="confirmed",numCountries=5,numDays=0):
+        
+               
+        fig = go.Figure()
+        
+        df = self.getDailyNewCasesByCountry(option)
+        for irow in range(numCountries):
+            fig.add_trace(
+            go.Scatter(x=df.columns[-numDays:], y=df.iloc[irow, -numDays:], name=df.index[irow], line=dict(width=2), mode="lines+markers")
+            )
+        fig.update_layout(
+            title_text="Top " + str(numCountries) + " countries with new " + option + " cases per day",
+            legend=dict(orientation="h", yanchor="top", valign="middle", y=1.12)
+        )
+        
+        return fig
+    
+    def getContryHistogramGraph(self):
+        
+        df = self.getDailyCountsByCountry("confirmed")
+        [freq, bins] = np.histogram(df.iloc[:,-1], bins=10)
+        
+        fig = make_subplots(rows=1, cols=2,subplot_titles=("Confirmed", "Deaths"))
+        fig.add_trace(
+            go.Bar(x=bins[1:], y=freq,  text=freq, textposition='outside'),
+            row=1, col=1
+        )
+        fig.update_xaxes(title_text="cases", row=1, col=1)
+        fig.update_yaxes(title_text="number of countries", row=1, col=1)
+        
+        df = self.getDailyCountsByCountry("deaths")
+        [freq, bins] = np.histogram(df.iloc[:,-1], bins=10)
+        fig.add_trace(
+            go.Bar(x=bins[1:], y=freq,  text=freq, textposition='outside'),
+            row=1, col=2
+        )
+        fig.update_xaxes(title_text="cases", row=1, col=2)
+        fig.update_yaxes(title_text="number of countries",side='right', row=1, col=2)
+        
+        fig.update_layout(
+            showlegend=False   
+            )
+        
+        return fig
     
 
-# myData = Covid19Data()
-# myData.loadData()
+myData = Covid19Data()
+myData.loadData()
 
 # print(myData.getDailyCountsByCountry("confirmed"))
 # print(myData.getDailyChangeRateByCountry("confirmed"))
+# print(myData.getDailyNewCasesByCountry("deaths"))
+#myData.getCountryNewCasesRatesGraph().show()
