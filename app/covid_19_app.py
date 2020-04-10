@@ -1,8 +1,8 @@
 import streamlit as st
-import plotly.graph_objects as go
-import plotly.express as px
-import numpy as np
-from plotly.subplots import make_subplots
+# import plotly.graph_objects as go
+# import plotly.express as px
+# import numpy as np
+# from plotly.subplots import make_subplots
 
 from packages.processing.Covid19Data import Covid19Data
 
@@ -30,16 +30,18 @@ st.markdown("""---""")
 st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="confirmed",numCountries=5,numDays=45))
 st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries=5,numDays=45))
 
+#st.plotly_chart(myData.getTopCountriesActivePercentGraph(numCountries=5,numDays=45))
+
 #############################################################################
 st.markdown("""---""")
 countryName = st.selectbox("Select country name", 
                            myData.countryNames, 
-                           int(myData.getCountryNameIndex("Canada"))
+                           int(myData.getCountryNameIndex("canada"))
                            )
 
 st.plotly_chart(myData.getCountryStatsGraph(countryName))
-#st.plotly_chart(myData.getCountryNewCasesRatesGraph(countryName))
-
+st.plotly_chart(myData.getCountryRatesGraph(countryName))
+st.plotly_chart(myData.getCountryNewCasesGraph(countryName))
 
 #############################################################################
 #st.markdown("""---""")
