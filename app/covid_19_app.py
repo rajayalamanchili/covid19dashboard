@@ -18,18 +18,17 @@ st.title("COVID 19 Dashboard")
 
 #############################################################################
 st.markdown("""---""")
-st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="confirmed",numCountries=5,numDays=30))
-st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries=5,numDays=30))
-
-
-#############################################################################
-st.markdown("""---""")
-countryNameOptions = st.multiselect("Select upto 5 countries",
+countryNameOptions = st.multiselect("Select countries",
                                     myData.countryNames.tolist(),
-                                    ["Canada", "US"])
+                                    myData.getDailyNewCasesByCountry("confirmed").index[:5].tolist())
                            
 
 st.latex(myData.getCumulativeDataSummary(countryNameOptions))
+
+#############################################################################
+st.markdown("""---""")
+st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="confirmed",numCountries=5,numDays=45))
+st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries=5,numDays=45))
 
 #############################################################################
 st.markdown("""---""")
