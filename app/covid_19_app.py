@@ -39,9 +39,9 @@ countryName = st.selectbox("Select country name",
                            int(myData.getCountryNameIndex("canada"))
                            )
 
+st.plotly_chart(myData.getCountryNewCasesGraph(countryName))
 st.plotly_chart(myData.getCountryStatsGraph(countryName))
 st.plotly_chart(myData.getCountryRatesGraph(countryName))
-st.plotly_chart(myData.getCountryNewCasesGraph(countryName))
 
 #############################################################################
 #st.markdown("""---""")
