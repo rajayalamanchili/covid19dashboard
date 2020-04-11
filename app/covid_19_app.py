@@ -15,6 +15,7 @@ myData.loadData()
 # display data
 
 st.title("COVID 19 Dashboard")
+st.markdown("""###### Author: Raja Yalamanchili""")
 
 #############################################################################
 st.markdown("""---""")
