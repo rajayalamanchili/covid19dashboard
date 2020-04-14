@@ -28,8 +28,8 @@ st.latex(myData.getCumulativeDataSummary(countryNameOptions))
 
 #############################################################################
 st.markdown("""---""")
-st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="confirmed",numCountries=5,numDays=45))
-st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries=5,numDays=45))
+st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="confirmed",numCountries=5))
+st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries=5))
 
 #st.plotly_chart(myData.getTopCountriesActivePercentGraph(numCountries=5,numDays=45))
 
@@ -47,6 +47,11 @@ st.plotly_chart(myData.getCountryRatesGraph(countryName))
 #############################################################################
 #st.markdown("""---""")
 #st.plotly_chart(myData.getContryHistogramGraph())
+
+#############################################################################
+st.markdown("""---""")
+counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths"),1)
+st.plotly_chart(myData.getGlobalCountsGraph(counstOption))
 
 #############################################################################
 st.markdown("""---""")
