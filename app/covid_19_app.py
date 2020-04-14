@@ -21,7 +21,7 @@ st.markdown("""###### Author: Raja Yalamanchili""")
 st.markdown("""---""")
 countryNameOptions = st.multiselect("Select countries",
                                     myData.countryNames.tolist(),
-                                    myData.getDailyNewCasesByCountry("confirmed").index[:5].tolist())
+                                    myData.getTopDailyNewCasesByCountry("confirmed").index.tolist())
                            
 
 st.latex(myData.getCumulativeDataSummary(countryNameOptions))
@@ -50,7 +50,7 @@ st.plotly_chart(myData.getCountryRatesGraph(countryName))
 
 #############################################################################
 st.markdown("""---""")
-counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths"),1)
+counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "active/confirmed ratio", "recovered/confirmed ratio", "deaths/confirmed ratio"),1)
 st.plotly_chart(myData.getGlobalCountsGraph(counstOption))
 
 #############################################################################

@@ -117,7 +117,8 @@ class Covid19Data:
         # drop rows below ncases
         outputDF = outputDF.drop(outputDF.index[outputDF.iloc[:,-1] < ncases])
                
-        outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        #outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        outputDF.sort_index(inplace=True)
         outputDF.columns = pd.to_datetime(outputDF.columns)
         
         return outputDF
@@ -131,7 +132,8 @@ class Covid19Data:
             outputDF.iloc[:,icol] = (outputDF.iloc[:,icol] - outputDF.iloc[:,icol-1])
         
         
-        outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        #outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        outputDF.sort_index(inplace=True)
         outputDF.columns = pd.to_datetime(outputDF.columns)
         
         return outputDF
@@ -145,10 +147,17 @@ class Covid19Data:
             outputDF.iloc[:,icol] = ((outputDF.iloc[:,icol] - outputDF.iloc[:,icol-1])/outputDF.iloc[:,icol-1])*100
         
         
-        outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        #outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        outputDF.sort_index(inplace=True)
         outputDF.columns = pd.to_datetime(outputDF.columns)
         
         return outputDF
+    
+    def getTopDailyNewCasesByCountry(self,option="confirmed", numCountries=5):
+        df = self.getDailyNewCasesByCountry(option)
+        df = df.sort_values(by=df.columns[-1], ascending=False)
+        
+        return df.iloc[:numCountries,:]
     
     def getTopCountriesNewCasesGraph(self,option="confirmed",numCountries=5):
         
@@ -156,6 +165,7 @@ class Covid19Data:
         fig = go.Figure()
         
         df = self.getDailyNewCasesByCountry(option)
+        df = df.sort_values(by=df.columns[-1], ascending=False)
         for irow in range(numCountries):
             fig.add_trace(
             go.Scatter(x=df.columns[-self.numDays:], y=df.iloc[irow, -self.numDays:], name=df.index[irow].upper(), line=dict(width=2), mode="lines+markers")
@@ -304,7 +314,22 @@ class Covid19Data:
     
     def getGlobalCountsGraph(self,option="active"):
         
-        dfCounts = self.getDailyCountsByCountry(option)
+        if("/" in option):
+            if("active" in option):
+                dfCounts = self.getDailyCountsByCountry("active")
+            if("recovered" in option):
+                dfCounts = self.getDailyCountsByCountry("recovered")
+            if("deaths" in option):
+                dfCounts = self.getDailyCountsByCountry("deaths")
+                
+            dfCountsConf = self.getDailyCountsByCountry("confirmed")
+            
+            data = round((dfCounts.iloc[:,-1] / dfCountsConf.iloc[:,-1])*100, 2)
+            
+        else:
+            dfCounts = self.getDailyCountsByCountry(option)
+            data = dfCounts.iloc[:,-1]
+        
         geoInfo = pd.DataFrame()
         
         for idx in dfCounts.index:
@@ -329,14 +354,14 @@ class Covid19Data:
             )
             
         if(option!="population"):
-            if(option == "recovered"):
+            if("recovered" in option):
                 invScale = True
             else:
                 invScale = False
                 
             fig.add_trace(go.Choropleth(
                         locations =  geoInfo["countryCode"],
-                        z = dfCounts.iloc[:,-1],
+                        z = data,
                         #z = round((dfCounts.iloc[:,-1] / geoInfo["population"])*100, 3),
                         text = dfCounts.index,
                         colorscale = 'Geyser',
@@ -349,7 +374,7 @@ class Covid19Data:
             
         
         fig.update_layout(
-            title_text= option + " cases : {:%B %d, %Y}".format(pd.to_datetime(dfCounts.columns[-1])) ,
+            title_text= option + " : {:%B %d, %Y}".format(pd.to_datetime(dfCounts.columns[-1])) ,
             geo=dict(
                 showframe=False,
                 showcoastlines=False,
@@ -372,4 +397,4 @@ myData.loadData()
 # print(myData.getDailyNewCasesByCountry("deaths"))
 #myData.getCountryNewCasesRatesGraph("India").show()
 #myData.getTopCountriesActivePercentGraph(numCountries=5,self.numDays=45).show()
-myData.getGlobalCountsGraph(option="active")
+myData.getGlobalCountsGraph(option="active/confirmed")
