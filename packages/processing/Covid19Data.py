@@ -405,6 +405,48 @@ class Covid19Data:
         return fig
     
     
+    def getGlobalCountsAnimationsGraph(self,option="active"):
+        
+        if("Ratio" in option):
+            if("active" in option):
+                dfCounts = self.getDailyCountsByCountry("active")
+                titleStr = "active to confirmed cases ratio"                
+            if("recovered" in option):
+                dfCounts = self.getDailyCountsByCountry("recovered")
+                titleStr = "recovered to confirmed cases ratio"
+            if("deaths" in option):
+                dfCounts = self.getDailyCountsByCountry("deaths")
+                titleStr = "deaths to confirmed cases ratio"
+                
+            dfCountsConf = self.getDailyCountsByCountry("confirmed")            
+            data = round((dfCounts / dfCountsConf)*100, 2)            
+            
+        else:
+            dfCounts = self.getDailyCountsByCountry(option)
+            data = dfCounts
+            titleStr = option + " cases"
+        np.random.seed( 30 )
+        fig_dict = {
+                "data": [go.Scatter(x=data.index, y=data.iloc[:,-1], mode="markers",
+                                    marker=dict(size=10,
+                                                colorscale = 'Phase',
+                                                color=np.random.randint(0,len(data.index),len(data.index))))],
+                "layout": {},
+                "frames": []
+            }
+        if("Ratio" in option):
+            yaxisTitle = "percent"
+        else:
+            yaxisTitle = "cases"
+            
+        fig_dict["layout"] = go.Layout(xaxis=dict(zeroline=False),
+                                       yaxis=dict(title=yaxisTitle, zeroline=False),
+                                       title_text= "{:%B %d, %Y}: ".format(pd.to_datetime(dfCounts.columns[-1])) + titleStr)
+        
+        fig = go.Figure(fig_dict)
+        
+        return fig
+    
     
 
 #myData = Covid19Data()
