@@ -347,7 +347,7 @@ class Covid19Data:
         geoInfo = pd.DataFrame()
         
         for idx in data.index:
-            rowMatchIdx = np.argmax(self.countryInfoDF["Country_Region"] == idx)
+            rowMatchIdx = (self.countryInfoDF["Country_Region"] == idx).idxmax()
             geoInfo.loc[idx,"countryCode"] = self.countryInfoDF.loc[rowMatchIdx,"iso3"]
             geoInfo.loc[idx,"countryName"] = self.countryInfoDF.loc[rowMatchIdx,"Country_Region"]
             geoInfo.loc[idx,"population"] = self.countryInfoDF.loc[rowMatchIdx,"Population"]
@@ -407,12 +407,12 @@ class Covid19Data:
     
     
 
-#myData = Covid19Data()
-#myData.loadData()
+myData = Covid19Data()
+myData.loadData()
 
 # print(myData.getDailyCountsByCountry("confirmed"))
 # print(myData.getDailyChangeRateByCountry("confirmed"))
 # print(myData.getDailyNewCasesByCountry("deaths"))
 #myData.getCountryNewCasesRatesGraph("India").show()
 #myData.getTopCountriesActivePercentGraph(numCountries=5,self.numDays=45).show()
-#myData.getGlobalCountsGraph(option="deathsRatio")
+myData.getGlobalCountsGraph(option="deathsRatio")
