@@ -398,7 +398,7 @@ class Covid19Data:
                 showcoastlines=False,
                 projection_type='equirectangular',
                 #scope="north america"
-            )
+            )            
         )
         
         

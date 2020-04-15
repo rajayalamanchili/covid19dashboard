@@ -16,6 +16,7 @@ myData.loadData()
 
 st.title("COVID 19 Dashboard")
 st.markdown("""###### Author: Raja Yalamanchili""")
+st.markdown("""###### Data source: [Johns Hopkins CSSE data repository](https://github.com/CSSEGISandData/COVID-19)""")
 
 #############################################################################
 st.markdown("""---""")
@@ -58,7 +59,7 @@ st.plotly_chart(myData.getCountryRatesGraph(countryName))
 
 
 #############################################################################
-st.markdown("""---""")
-st.markdown("$\\scriptsize Data source:$ https://github.com/CSSEGISandData/COVID-19")
+# st.markdown("""---""")
+# st.markdown("$\\scriptsize Data source:$ https://github.com/CSSEGISandData/COVID-19")
 
 
