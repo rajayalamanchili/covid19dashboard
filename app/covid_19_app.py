@@ -35,7 +35,7 @@ st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries
 
 #############################################################################
 st.markdown("""---""")
-counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "activeRatio", "recoveredRatio", "deathsRatio"),1)
+counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "activeRatio", "recoveredRatio", "deathsRatio"),4)
 st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 st.plotly_chart(myData.getGlobalCountsGraph(counstOption))
