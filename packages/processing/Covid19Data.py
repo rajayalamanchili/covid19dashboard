@@ -407,12 +407,12 @@ class Covid19Data:
     
     
 
-myData = Covid19Data()
-myData.loadData()
+#myData = Covid19Data()
+#myData.loadData()
 
 # print(myData.getDailyCountsByCountry("confirmed"))
 # print(myData.getDailyChangeRateByCountry("confirmed"))
 # print(myData.getDailyNewCasesByCountry("deaths"))
 #myData.getCountryNewCasesRatesGraph("India").show()
 #myData.getTopCountriesActivePercentGraph(numCountries=5,self.numDays=45).show()
-myData.getGlobalCountsGraph(option="deathsRatio")
+#myData.getGlobalCountsGraph(option="deathsRatio")
