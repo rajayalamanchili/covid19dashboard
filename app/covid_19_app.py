@@ -35,6 +35,13 @@ st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries
 
 #############################################################################
 st.markdown("""---""")
+counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "activeRatio", "recoveredRatio", "deathsRatio"),1)
+st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+
+st.plotly_chart(myData.getGlobalCountsGraph(counstOption))
+
+#############################################################################
+st.markdown("""---""")
 countryName = st.selectbox("Select country name", 
                            myData.countryNames, 
                            int(myData.getCountryNameIndex("canada"))
@@ -48,10 +55,7 @@ st.plotly_chart(myData.getCountryRatesGraph(countryName))
 #st.markdown("""---""")
 #st.plotly_chart(myData.getContryHistogramGraph())
 
-#############################################################################
-st.markdown("""---""")
-counstOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "active/confirmed ratio", "recovered/confirmed ratio", "deaths/confirmed ratio"),1)
-st.plotly_chart(myData.getGlobalCountsGraph(counstOption))
+
 
 #############################################################################
 st.markdown("""---""")

@@ -314,25 +314,29 @@ class Covid19Data:
     
     def getGlobalCountsGraph(self,option="active"):
         
-        if("/" in option):
+        if("Ratio" in option):
             if("active" in option):
                 dfCounts = self.getDailyCountsByCountry("active")
+                titleStr = "active to confirmed cases ratio"                
             if("recovered" in option):
                 dfCounts = self.getDailyCountsByCountry("recovered")
+                titleStr = "recovered to confirmed cases ratio"
             if("deaths" in option):
                 dfCounts = self.getDailyCountsByCountry("deaths")
+                titleStr = "deaths to confirmed cases ratio"
                 
-            dfCountsConf = self.getDailyCountsByCountry("confirmed")
-            
-            data = round((dfCounts.iloc[:,-1] / dfCountsConf.iloc[:,-1])*100, 2)
+            dfCountsConf = self.getDailyCountsByCountry("confirmed")            
+            data = round((dfCounts.iloc[:,-1] / dfCountsConf.iloc[:,-1])*100, 2)            
             
         else:
             dfCounts = self.getDailyCountsByCountry(option)
             data = dfCounts.iloc[:,-1]
+            titleStr = option + " cases"
         
+        data = data.sort_values(ascending=False)
         geoInfo = pd.DataFrame()
         
-        for idx in dfCounts.index:
+        for idx in data.index:
             rowMatchIdx = np.argmax(self.countryInfoDF["Country_Region"] == idx)
             geoInfo.loc[idx,"countryCode"] = self.countryInfoDF.loc[rowMatchIdx,"iso3"]
             geoInfo.loc[idx,"countryName"] = self.countryInfoDF.loc[rowMatchIdx,"Country_Region"]
@@ -358,23 +362,27 @@ class Covid19Data:
                 invScale = True
             else:
                 invScale = False
+            if("Ratio" in option):
+                cbar = dict(x=-0.15, title="Percent", titleside="top", tickfont=dict(size=9))
+            else:
+                cbar = dict(x=-0.15, title="Cases", titleside="top", tickfont=dict(size=9))
                 
             fig.add_trace(go.Choropleth(
                         locations =  geoInfo["countryCode"],
                         z = data,
                         #z = round((dfCounts.iloc[:,-1] / geoInfo["population"])*100, 3),
-                        text = dfCounts.index,
+                        text = geoInfo["countryName"],
                         colorscale = 'Geyser',
                         autocolorscale=False,
                         reversescale=invScale,
-                        marker_line_color='white'
+                        marker_line_color='white',
+                        colorbar=cbar
                     )
             )
                 
-            
         
         fig.update_layout(
-            title_text= option + " : {:%B %d, %Y}".format(pd.to_datetime(dfCounts.columns[-1])) ,
+            title_text= "{:%B %d, %Y}: ".format(pd.to_datetime(dfCounts.columns[-1])) + titleStr,
             geo=dict(
                 showframe=False,
                 showcoastlines=False,
@@ -397,4 +405,4 @@ myData.loadData()
 # print(myData.getDailyNewCasesByCountry("deaths"))
 #myData.getCountryNewCasesRatesGraph("India").show()
 #myData.getTopCountriesActivePercentGraph(numCountries=5,self.numDays=45).show()
-myData.getGlobalCountsGraph(option="active/confirmed")
+myData.getGlobalCountsGraph(option="deathsRatio")
