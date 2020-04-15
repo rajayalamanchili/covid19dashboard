@@ -54,18 +54,7 @@ class Covid19Data:
         self.dtsDF["Country/Region"] = self.dtsDF["Country/Region"].str.lower()
         self.recoveredDF["Country/Region"] = self.recoveredDF["Country/Region"].str.lower()
         
-        self.confByCountryDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
-        self.dtsByCountryDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
-        self.recoveredByCountryDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
-      
-        
-        self.activeByCountryDF = pd.DataFrame(0, index=self.confByCountryDF.index, columns=self.confByCountryDF.columns)
-        
-        for idx in self.activeByCountryDF.index:
-            self.activeByCountryDF.loc[idx] = self.confByCountryDF.loc[idx] - self.recoveredByCountryDF.loc[idx] - self.dtsByCountryDF.loc[idx]
-            
-        #self.activeByCountryDF.iloc[:,4:] = self.confDF.iloc[:,4:] - self.recoveredDF.iloc[:,4:] - self.dtsDF.iloc[:,4:]
-        
+               
         self.updateCountryNames()
         
         self.countryInfoDF = pd.read_csv(self.countryInfoUrl)
@@ -73,7 +62,28 @@ class Covid19Data:
         self.countryInfoDF = self.countryInfoDF.drop(self.countryInfoDF.index
                                                      [(self.countryInfoDF["Country_Region"] != self.countryInfoDF["Combined_Key"]) 
                                                       | (self.countryInfoDF["Population"].isna())])
+        
+        
         self.countryInfoDF["Country_Region"] = self.countryInfoDF["Country_Region"].str.lower()
+        
+        self.confByCountryDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
+        self.dtsByCountryDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
+        self.recoveredByCountryDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
+        
+        # drop ship names
+        shipNames = ["Diamond Princess", "MS Zaandam"]
+        
+        for iname in shipNames:
+            self.confByCountryDF = self.confByCountryDF.drop(self.confByCountryDF.index[self.confByCountryDF.index == iname.lower()])
+            self.dtsByCountryDF = self.dtsByCountryDF.drop(self.dtsByCountryDF.index[self.dtsByCountryDF.index == iname.lower()])
+            self.recoveredByCountryDF = self.recoveredByCountryDF.drop(self.recoveredByCountryDF.index[self.recoveredByCountryDF.index == iname.lower()])
+        
+        self.activeByCountryDF = pd.DataFrame(0, index=self.confByCountryDF.index, columns=self.confByCountryDF.columns)
+        
+        for idx in self.activeByCountryDF.index:
+            self.activeByCountryDF.loc[idx] = self.confByCountryDF.loc[idx] - self.recoveredByCountryDF.loc[idx] - self.dtsByCountryDF.loc[idx]
+            
+        #self.activeByCountryDF.iloc[:,4:] = self.confDF.iloc[:,4:] - self.recoveredDF.iloc[:,4:] - self.dtsDF.iloc[:,4:]
         
            
     
@@ -397,12 +407,12 @@ class Covid19Data:
     
     
 
-#myData = Covid19Data()
-#myData.loadData()
+myData = Covid19Data()
+myData.loadData()
 
 # print(myData.getDailyCountsByCountry("confirmed"))
 # print(myData.getDailyChangeRateByCountry("confirmed"))
 # print(myData.getDailyNewCasesByCountry("deaths"))
 #myData.getCountryNewCasesRatesGraph("India").show()
 #myData.getTopCountriesActivePercentGraph(numCountries=5,self.numDays=45).show()
-#myData.getGlobalCountsGraph(option="deathsRatio")
+myData.getGlobalCountsGraph(option="deathsRatio")
