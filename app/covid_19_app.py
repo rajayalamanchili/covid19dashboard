@@ -11,9 +11,14 @@ from packages.processing.Covid19Data import Covid19Data
 
 st.title("COVID 19 Dashboard")
 st.markdown("""###### Author: Raja Yalamanchili""")
-st.markdown("""###### Data source: [Johns Hopkins CSSE data repository](https://github.com/CSSEGISandData/COVID-19)""")
+st.markdown("""###### Data source updated daily: [Johns Hopkins CSSE data repository](https://github.com/CSSEGISandData/COVID-19)""")
+
 
 tabOptions = st.sidebar.selectbox("Select an option", ("GLOBAL", "CANADA PROVINCES"),0)
+
+
+
+    
 
 if (tabOptions=="GLOBAL"):
     # load data
@@ -31,6 +36,11 @@ if (tabOptions=="GLOBAL"):
     
     #############################################################################
     st.markdown("""---""")
+    
+    daysOption = st.radio("", ("last 45 days","last 60 days","all days"),0)
+    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    myData.setNumDays(option=daysOption)
+    
     st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="confirmed",numCountries=5))
     st.plotly_chart(myData.getTopCountriesNewCasesGraph(option="deaths",numCountries=5))
     
@@ -39,7 +49,7 @@ if (tabOptions=="GLOBAL"):
     #############################################################################
     st.markdown("""---""")
     countsOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "activeRatio", "recoveredRatio", "deathsRatio"),2)
-    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    
     
     st.plotly_chart(myData.getGlobalCountsMap(countsOption))
     st.plotly_chart(myData.getGlobalCountsScatterPlot(countsOption))
@@ -69,13 +79,16 @@ if (tabOptions=="CANADA PROVINCES"):
     st.latex(myData.getCumulativeDataSummaryByProvince(countryName="canada"))
     #############################################################################
     st.markdown("""---""")
+    daysOption = st.radio("", ("last 45 days","last 60 days","all"),0)
+    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+    myData.setNumDays(option=daysOption)
+    
     st.plotly_chart(myData.getProvincesNewCasesGraph(countryName="canada",option="confirmed"))
     st.plotly_chart(myData.getProvincesNewCasesGraph(countryName="canada",option="deaths"))
     #############################################################################
     st.markdown("""---""")
     countsOption = st.radio("Select an option", ("confirmed","deaths"),0)
-    st.write('<style>div.Widget.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-    
+        
     st.plotly_chart(myData.getProvinceCountsScatterPlot(countryName="canada", option=countsOption))
     st.plotly_chart(myData.getProvinceTimeScatterPlot(countryName="canada", option=countsOption))
 

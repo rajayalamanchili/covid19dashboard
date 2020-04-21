@@ -26,6 +26,16 @@ class Covid19Data:
     activeByCountryDF = pd.DataFrame()
     countryInfoDF = pd.DataFrame()
     
+    def setNumDays(self, option="last 45 days"):
+        self.numDays = 45
+        if(option=="all days"):
+            self.numDays = 0
+        if(option=="last 45 days"):
+            self.numDays = 45
+        if(option=="last 60 days"):
+            self.numDays = 60
+        
+        
     def __init__(self):
         
         self.dataUrl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
@@ -33,7 +43,7 @@ class Covid19Data:
         self.fnames = ("time_series_covid19_confirmed_global.csv",
                   "time_series_covid19_deaths_global.csv",
                   "time_series_covid19_recovered_global.csv")
-        self.numDays = 45
+        self.setNumDays(option="last 45 days")
                 
     def updateCountryNames(self):
          
