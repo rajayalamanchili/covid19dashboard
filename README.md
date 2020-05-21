@@ -1,5 +1,13 @@
 # COVID 19 Dashboard
 Application to display covid 19 data 
+----
+## Docker Instructions
+
+*Build:*
+	`docker image build -t covid19app .`
+  
+*Run:*
+	`docker container run --name covid19dashboard -p 8501:8501 covid19app`
 
 ----
 
