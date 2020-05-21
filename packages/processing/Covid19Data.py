@@ -593,8 +593,8 @@ class Covid19Data:
         
         return fig
 
-myData = Covid19Data()
-myData.loadData()
+#myData = Covid19Data()
+#myData.loadData()
 
 # print(myData.getDailyCountsByCountry("confirmed"))
 # print(myData.getDailyChangeRateByCountry("confirmed"))
@@ -605,4 +605,4 @@ myData.loadData()
 
 #myData.getCumulativeDataSummaryByProvince(countryName="canada")
 
-myData.getProvinceCountsScatterPlot(countryName="canada",option="deaths")
+#myData.getProvinceCountsScatterPlot(countryName="canada",option="deaths")
