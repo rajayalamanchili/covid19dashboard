@@ -26,6 +26,16 @@ class Covid19Data:
     activeByCountryDF = pd.DataFrame()
     countryInfoDF = pd.DataFrame()
     
+    def setNumDays(self, option="last 45 days"):
+        self.numDays = 45
+        if(option=="all days"):
+            self.numDays = 0
+        if(option=="last 45 days"):
+            self.numDays = 45
+        if(option=="last 60 days"):
+            self.numDays = 60
+        
+        
     def __init__(self):
         
         self.dataUrl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
@@ -33,7 +43,7 @@ class Covid19Data:
         self.fnames = ("time_series_covid19_confirmed_global.csv",
                   "time_series_covid19_deaths_global.csv",
                   "time_series_covid19_recovered_global.csv")
-        self.numDays = 45
+        self.setNumDays(option="last 45 days")
                 
     def updateCountryNames(self):
          
@@ -54,6 +64,10 @@ class Covid19Data:
         self.dtsDF["Country/Region"] = self.dtsDF["Country/Region"].str.lower()
         self.recoveredDF["Country/Region"] = self.recoveredDF["Country/Region"].str.lower()
         
+        self.confDF["Province/State"] = self.confDF["Province/State"].str.lower()
+        self.dtsDF["Province/State"] = self.dtsDF["Province/State"].str.lower()
+        self.recoveredDF["Province/State"] = self.recoveredDF["Province/State"].str.lower()
+        
                
         self.updateCountryNames()
         
@@ -63,14 +77,21 @@ class Covid19Data:
                                                      [(self.countryInfoDF["Country_Region"] != self.countryInfoDF["Combined_Key"]) 
                                                       | (self.countryInfoDF["Population"].isna())])
         
+        # drop provinces matching
+        shipNames = ["grand princess", "diamond princess", "recovered"]
         
+        for iname in shipNames:
+            self.confDF = self.confDF.drop(self.confDF.index[self.confDF["Province/State"] == iname.lower()])
+            self.dtsDF = self.dtsDF.drop(self.dtsDF.index[self.dtsDF["Province/State"] == iname.lower()])
+            self.recoveredDF = self.recoveredDF.drop(self.recoveredDF.index[self.recoveredDF["Province/State"] == iname.lower()])
+            
         self.countryInfoDF["Country_Region"] = self.countryInfoDF["Country_Region"].str.lower()
         
         self.confByCountryDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
         self.dtsByCountryDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
         self.recoveredByCountryDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
         
-        # drop ship names
+        # drop countries matching
         shipNames = ["Diamond Princess", "MS Zaandam"]
         
         for iname in shipNames:
@@ -113,6 +134,31 @@ class Covid19Data:
                         
         return outputStr
     
+    def getCumulativeDataSummaryByProvince(self,countryName="canada"):
+        provinceNamesDF =  self.confDF.loc[(self.confDF["Country/Region"] == countryName)]
+        provinceNamesDF = provinceNamesDF.sort_values(by=provinceNamesDF.columns[-1], ascending=False)
+        provinceNamesOptions = provinceNamesDF["Province/State"]
+        
+        
+        outputStr = """\\begin{matrix}"""
+        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
+        countryCumTotals = self.aggregateAllDataByCountryName(countryName).iloc[-1,:]
+        outputStr += """\\normalsize \\bf {} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
+                    .format(countryName.upper(), countryCumTotals[0], countryCumTotals[2])
+        if(len(provinceNamesOptions)>1):
+            for pname in provinceNamesOptions:
+                rowIdx = (self.confDF["Province/State"] == pname).idxmax()
+                outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
+                            .format(pname.replace(" ",",").upper(), self.confDF.loc[rowIdx,provinceNamesDF.columns[-1]],self.dtsDF.loc[rowIdx,provinceNamesDF.columns[-1]])
+        else:
+            outputStr += "No Province Info Available"
+        
+        
+        outputStr += """\\end{matrix}"""
+                        
+                        
+        return outputStr
+    
     def getDailyCountsByCountry(self,option="confirmed", ncases=0):
         
         if(option=="confirmed"):
@@ -132,6 +178,7 @@ class Covid19Data:
         outputDF.columns = pd.to_datetime(outputDF.columns)
         
         return outputDF
+    
     
     def getDailyNewCasesByCountry(self,option="confirmed", ncases=0):
         
@@ -322,7 +369,7 @@ class Covid19Data:
         
         return fig
     
-    def getGlobalCountsGraph(self,option="active"):
+    def getGlobalCountsMap(self,option="active"):
         
         if("Ratio" in option):
             if("active" in option):
@@ -405,7 +452,146 @@ class Covid19Data:
         return fig
     
     
+    def getGlobalCountsScatterPlot(self,option="active"):
+        
+        if("Ratio" in option):
+            if("active" in option):
+                dfCounts = self.getDailyCountsByCountry("active")
+                titleStr = "active to confirmed cases ratio"                
+            if("recovered" in option):
+                dfCounts = self.getDailyCountsByCountry("recovered")
+                titleStr = "recovered to confirmed cases ratio"
+            if("deaths" in option):
+                dfCounts = self.getDailyCountsByCountry("deaths")
+                titleStr = "deaths to confirmed cases ratio"
+                
+            dfCountsConf = self.getDailyCountsByCountry("confirmed")            
+            data = round((dfCounts / dfCountsConf)*100, 2)            
+            
+        else:
+            dfCounts = self.getDailyCountsByCountry(option)
+            data = dfCounts
+            titleStr = option + " cases"
+        np.random.seed( 30 )
+        fig_dict = {
+                "data": [go.Scatter(x=data.index, y=data.iloc[:,-1], mode="markers",
+                                    marker=dict(size=10,
+                                                colorscale = 'Phase',
+                                                color=np.random.randint(0,len(data.index),len(data.index))))],
+                "layout": {},
+                "frames": []
+            }
+        if("Ratio" in option):
+            yaxisTitle = "percent"
+        else:
+            yaxisTitle = "cases"
+            
+        fig_dict["layout"] = go.Layout(xaxis=dict(zeroline=False),
+                                       yaxis=dict(title=yaxisTitle, zeroline=False),
+                                       title_text= "{:%B %d, %Y}: ".format(pd.to_datetime(dfCounts.columns[-1])) + titleStr)
+        
+        fig = go.Figure(fig_dict)
+        
+        return fig
     
+    def getDailyCountsByCountryProvince(self,countryName="canada",option="confirmed"):
+        
+        if(option=="confirmed"):
+            outputDF =  pd.DataFrame(self.confDF.loc[(self.confDF["Country/Region"] == countryName)])
+            
+        if(option=="deaths"):
+            outputDF =  pd.DataFrame(self.dtsDF.loc[(self.confDF["Country/Region"] == countryName)])
+        
+        outputDF = outputDF.drop(columns=["Country/Region", "Lat","Long"])
+        #outputDF = outputDF.sort_values(by=outputDF.columns[-1], ascending=False)
+        #outputDF.sort_index(inplace=True)
+        #outputDF.columns[1:] = pd.to_datetime(outputDF.columns[1:])
+        
+        return outputDF
+    
+    def getDailyNewCasesByCountryProvince(self,countryName="canada",option="confirmed"):
+        
+        outputDF = self.getDailyCountsByCountryProvince(countryName,option)
+        
+       
+        for icol in range(len(outputDF.columns)-1,1,-1):
+            outputDF.iloc[:,icol] = (outputDF.iloc[:,icol] - outputDF.iloc[:,icol-1])
+        
+        return outputDF
+    
+    def getProvincesNewCasesGraph(self,countryName="canada",option="confirmed"):
+        
+               
+        fig = go.Figure()
+        
+        df = self.getDailyNewCasesByCountryProvince(countryName,option)
+        df = df.sort_values(by=df.columns[-1], ascending=False).reset_index()
+        for irow in range(len(df)):
+            fig.add_trace(
+            go.Scatter(x=pd.to_datetime(df.columns[-self.numDays:]), y=df.iloc[irow, -self.numDays:], name=df.loc[irow,"Province/State"].upper(), line=dict(width=2), mode="lines+markers")
+            )
+        if(option=="confirmed"):
+           fig.update_layout(
+                title_text="Provinces with new positive cases each day",
+                yaxis=dict(title="cases", zeroline=False),
+                legend=dict(orientation="h", yanchor="bottom", valign="middle", y=-1)
+            )
+        if(option=="deaths"):
+           fig.update_layout(
+                title_text="Provinces with new death cases each day",
+                yaxis=dict(title="cases", zeroline=False),
+                legend=dict(orientation="h", yanchor="bottom", valign="middle", y=-1)
+            )
+        
+        return fig
+    
+    def getProvinceCountsScatterPlot(self,countryName="canada", option="confirmed"):
+        
+        data = self.getDailyCountsByCountryProvince(countryName,option)
+       
+        titleStr = option + " cases"
+        np.random.seed( 10 )
+        fig_dict = {
+                "data": [go.Scatter(x=data.iloc[:,0], y=data.iloc[:,-1], mode="markers",
+                                    marker=dict(size=10,
+                                                colorscale = 'Phase',
+                                                color=np.random.randint(0,len(data.index),len(data.index))))],
+                "layout": {},
+                "frames": []
+            }
+            
+        fig_dict["layout"] = go.Layout(xaxis=dict(zeroline=False),
+                                       yaxis=dict(title="cases", zeroline=False),
+                                       title_text= "{:%B %d, %Y}: ".format(pd.to_datetime(data.columns[-1])) + titleStr)
+        
+        fig = go.Figure(fig_dict)
+        
+        return fig
+    
+    def getProvinceTimeScatterPlot(self,countryName="canada", option="confirmed"):
+        
+        fig = go.Figure()
+        
+        df = self.getDailyCountsByCountryProvince(countryName,option)
+        df = df.sort_values(by=df.columns[-1], ascending=False).reset_index()
+        for irow in range(len(df)):
+            fig.add_trace(
+            go.Scatter(x=pd.to_datetime(df.columns[-self.numDays:]), y=df.iloc[irow, -self.numDays:], name=df.loc[irow,"Province/State"].upper(), line=dict(width=2), mode="lines+markers")
+            )
+        if(option=="confirmed"):
+           fig.update_layout(
+                title_text="Cumulative confirmed cases each day",
+                yaxis=dict(title="cases", zeroline=False),
+                legend=dict(orientation="h", yanchor="bottom", valign="middle", y=-1)
+            )
+        if(option=="deaths"):
+           fig.update_layout(
+                title_text="Cumulative confirmed cases each day",
+                yaxis=dict(title="cases", zeroline=False),
+                legend=dict(orientation="h", yanchor="bottom", valign="middle", y=-1)
+            )
+        
+        return fig
 
 #myData = Covid19Data()
 #myData.loadData()
@@ -416,3 +602,7 @@ class Covid19Data:
 #myData.getCountryNewCasesRatesGraph("India").show()
 #myData.getTopCountriesActivePercentGraph(numCountries=5,self.numDays=45).show()
 #myData.getGlobalCountsGraph(option="deathsRatio")
+
+#myData.getCumulativeDataSummaryByProvince(countryName="canada")
+
+#myData.getProvinceCountsScatterPlot(countryName="canada",option="deaths")
