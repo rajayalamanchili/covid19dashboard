@@ -1,5 +1,5 @@
 # COVID 19 Dashboard
-##Application to display covid 19 data 
+Application to display covid 19 data 
 
 ----
 
