@@ -1,6 +1,6 @@
 # COVID 19 Dashboard
 Application to display covid 19 data 
-----
+
 ## Docker Instructions
 
 *Build:*
@@ -9,12 +9,12 @@ Application to display covid 19 data
 *Run:*
 	`docker container run --name covid19dashboard -p 8501:8501 covid19app`
 
-----
+
 
 ## Link for updated data 
 [https://novelcovid19dashboard.herokuapp.com](https://novelcovid19dashboard.herokuapp.com/)
 
-----
+
 ## Dashboard images
 
 ![](/images/covid19dashboard_img_01.JPG?raw=true)
