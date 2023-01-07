@@ -14,6 +14,7 @@ st.markdown("""###### Author: Raja Yalamanchili""")
 st.markdown("""###### Data source updated daily: [Johns Hopkins CSSE data repository](https://github.com/CSSEGISandData/COVID-19)""")
 
 
+
 tabOptions = st.sidebar.selectbox("Select an option", ("GLOBAL", "CANADA PROVINCES"),0)
 
 
@@ -48,7 +49,8 @@ if (tabOptions=="GLOBAL"):
     
     #############################################################################
     st.markdown("""---""")
-    countsOption = st.radio("Select an option", ("confirmed","active","recovered","deaths", "activeRatio", "recoveredRatio", "deathsRatio"),2)
+    # recovery data discontinued after Aug 4, 2021
+    countsOption = st.radio("Select an option", ("confirmed","deaths", "deathsRatio"),2)
     
     
     st.plotly_chart(myData.getGlobalCountsMap(countsOption))

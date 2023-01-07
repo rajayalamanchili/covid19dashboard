@@ -19,11 +19,11 @@ class Covid19Data:
     numDays = 0
     confDF = pd.DataFrame()
     dtsDF = pd.DataFrame()
-    recoveredDF = pd.DataFrame()
+    # recoveredDF = pd.DataFrame() # recovery data discontinued after Aug 4, 2021
     confByCountryDF = pd.DataFrame()
     dtsByCountryDF = pd.DataFrame()
-    recoveredByCountryDF = pd.DataFrame()
-    activeByCountryDF = pd.DataFrame()
+    # recoveredByCountryDF = pd.DataFrame() # recovery data discontinued after Aug 4, 2021
+    # activeByCountryDF = pd.DataFrame() # recovery data discontinued after Aug 4, 2021
     countryInfoDF = pd.DataFrame()
     
     def setNumDays(self, option="last 45 days"):
@@ -41,8 +41,7 @@ class Covid19Data:
         self.dataUrl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/"
         self.countryInfoUrl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv"
         self.fnames = ("time_series_covid19_confirmed_global.csv",
-                  "time_series_covid19_deaths_global.csv",
-                  "time_series_covid19_recovered_global.csv")
+                  "time_series_covid19_deaths_global.csv")
         self.setNumDays(option="last 45 days")
                 
     def updateCountryNames(self):
@@ -58,15 +57,12 @@ class Covid19Data:
         
         self.confDF = pd.read_csv(self.dataUrl + self.fnames[0])
         self.dtsDF = pd.read_csv(self.dataUrl + self.fnames[1])
-        self.recoveredDF = pd.read_csv(self.dataUrl + self.fnames[2])
                 
         self.confDF["Country/Region"] = self.confDF["Country/Region"].str.lower()
         self.dtsDF["Country/Region"] = self.dtsDF["Country/Region"].str.lower()
-        self.recoveredDF["Country/Region"] = self.recoveredDF["Country/Region"].str.lower()
         
         self.confDF["Province/State"] = self.confDF["Province/State"].str.lower()
         self.dtsDF["Province/State"] = self.dtsDF["Province/State"].str.lower()
-        self.recoveredDF["Province/State"] = self.recoveredDF["Province/State"].str.lower()
         
                
         self.updateCountryNames()
@@ -83,13 +79,11 @@ class Covid19Data:
         for iname in shipNames:
             self.confDF = self.confDF.drop(self.confDF.index[self.confDF["Province/State"] == iname.lower()])
             self.dtsDF = self.dtsDF.drop(self.dtsDF.index[self.dtsDF["Province/State"] == iname.lower()])
-            self.recoveredDF = self.recoveredDF.drop(self.recoveredDF.index[self.recoveredDF["Province/State"] == iname.lower()])
             
         self.countryInfoDF["Country_Region"] = self.countryInfoDF["Country_Region"].str.lower()
         
         self.confByCountryDF = pd.DataFrame(self.confDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
         self.dtsByCountryDF = pd.DataFrame(self.dtsDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
-        self.recoveredByCountryDF = pd.DataFrame(self.recoveredDF.groupby("Country/Region").agg("sum")).drop(columns=["Lat","Long"])
         
         # drop countries matching
         shipNames = ["Diamond Princess", "MS Zaandam"]
@@ -97,23 +91,14 @@ class Covid19Data:
         for iname in shipNames:
             self.confByCountryDF = self.confByCountryDF.drop(self.confByCountryDF.index[self.confByCountryDF.index == iname.lower()])
             self.dtsByCountryDF = self.dtsByCountryDF.drop(self.dtsByCountryDF.index[self.dtsByCountryDF.index == iname.lower()])
-            self.recoveredByCountryDF = self.recoveredByCountryDF.drop(self.recoveredByCountryDF.index[self.recoveredByCountryDF.index == iname.lower()])
         
-        self.activeByCountryDF = pd.DataFrame(0, index=self.confByCountryDF.index, columns=self.confByCountryDF.columns)
-        
-        for idx in self.activeByCountryDF.index:
-            self.activeByCountryDF.loc[idx] = self.confByCountryDF.loc[idx] - self.recoveredByCountryDF.loc[idx] - self.dtsByCountryDF.loc[idx]
-            
-        #self.activeByCountryDF.iloc[:,4:] = self.confDF.iloc[:,4:] - self.recoveredDF.iloc[:,4:] - self.dtsDF.iloc[:,4:]
-        
+               
            
     
     def aggregateAllDataByCountryName(self,countryName="canada"):
-        outputDF = pd.DataFrame(columns=["confirmed","recovered","deaths"])
+        outputDF = pd.DataFrame(columns=["confirmed","deaths"])
         outputDF["confirmed"] = self.confByCountryDF.transpose()[countryName]
         outputDF["deaths"] = self.dtsByCountryDF.transpose()[countryName]
-        outputDF["recovered"] = self.recoveredByCountryDF.transpose()[countryName]
-        outputDF["active"] = self.activeByCountryDF.transpose()[countryName]
         
         outputDF.index = pd.to_datetime(outputDF.index)
         
@@ -122,13 +107,13 @@ class Covid19Data:
     def getCumulativeDataSummary(self,countryNameOptions="canada"):
         
         outputStr = """\\begin{matrix}"""
-        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Recovered && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
-        outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
-                    .format(self.confDF.iloc[:,-1].sum(),self.recoveredDF.iloc[:,-1].sum(),self.dtsDF.iloc[:,-1].sum())
+        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
+        outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
+                    .format(self.confDF.iloc[:,-1].sum(), self.dtsDF.iloc[:,-1].sum())
         for cname in countryNameOptions:
             countryCumTotals = self.aggregateAllDataByCountryName(cname).iloc[-1,:]
-            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
-                        .format(cname.upper(), countryCumTotals[0], countryCumTotals[1], countryCumTotals[2])
+            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
+                        .format(cname.upper(), countryCumTotals[0], countryCumTotals[1])
         outputStr += """\\end{matrix}"""
                         
                         
@@ -163,12 +148,8 @@ class Covid19Data:
         
         if(option=="confirmed"):
             outputDF = self.confByCountryDF.copy()
-        if(option=="recovered"):
-            outputDF = self.recoveredByCountryDF.copy()
         if(option=="deaths"):
             outputDF = self.dtsByCountryDF.copy()
-        if(option=="active"):
-            outputDF = self.activeByCountryDF.copy()
         
         # drop rows below ncases
         outputDF = outputDF.drop(outputDF.index[outputDF.iloc[:,-1] < ncases])
@@ -369,7 +350,7 @@ class Covid19Data:
         
         return fig
     
-    def getGlobalCountsMap(self,option="active"):
+    def getGlobalCountsMap(self,option="deaths"):
         
         if("Ratio" in option):
             if("active" in option):
@@ -452,7 +433,7 @@ class Covid19Data:
         return fig
     
     
-    def getGlobalCountsScatterPlot(self,option="active"):
+    def getGlobalCountsScatterPlot(self,option="deaths"):
         
         if("Ratio" in option):
             if("active" in option):
