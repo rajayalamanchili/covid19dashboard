@@ -50,7 +50,7 @@ if (tabOptions=="GLOBAL"):
     #############################################################################
     st.markdown("""---""")
     # recovery data discontinued after Aug 4, 2021
-    countsOption = st.radio("Select an option", ("confirmed","deaths", "deathsRatio"),2)
+    countsOption = st.radio("Select an option", ("confirmed","deaths", "deathsRatio"),1)
     
     
     st.plotly_chart(myData.getGlobalCountsMap(countsOption))

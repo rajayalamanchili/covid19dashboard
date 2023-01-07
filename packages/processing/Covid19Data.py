@@ -107,12 +107,12 @@ class Covid19Data:
     def getCumulativeDataSummary(self,countryNameOptions="canada"):
         
         outputStr = """\\begin{matrix}"""
-        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
-        outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
+        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Deaths \\cr""".format(pd.to_datetime(self.confDF.columns[-1]))
+        outputStr += """\\normalsize \\bf Global && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr""" \
                     .format(self.confDF.iloc[:,-1].sum(), self.dtsDF.iloc[:,-1].sum())
         for cname in countryNameOptions:
             countryCumTotals = self.aggregateAllDataByCountryName(cname).iloc[-1,:]
-            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
+            outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} \\cr""" \
                         .format(cname.upper(), countryCumTotals[0], countryCumTotals[1])
         outputStr += """\\end{matrix}"""
                         
@@ -126,14 +126,14 @@ class Covid19Data:
         
         
         outputStr = """\\begin{matrix}"""
-        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Deaths \\cr[5pt]""".format(pd.to_datetime(self.confDF.columns[-1]))
+        outputStr += """\\scriptsize \\bf {:%B, %d, %Y} && \\large \\bf Confirmed && \\large \\bf Deaths \\cr""".format(pd.to_datetime(self.confDF.columns[-1]))
         countryCumTotals = self.aggregateAllDataByCountryName(countryName).iloc[-1,:]
-        outputStr += """\\normalsize \\bf {} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr[2pt]""" \
+        outputStr += """\\normalsize \\bf {} && \\normalsize \\bf {:,} && \\normalsize \\bf {:,} \\cr""" \
                     .format(countryName.upper(), countryCumTotals[0], countryCumTotals[2])
         if(len(provinceNamesOptions)>1):
             for pname in provinceNamesOptions:
                 rowIdx = (self.confDF["Province/State"] == pname).idxmax()
-                outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} \\cr[2pt]""" \
+                outputStr += """\\normalsize  {} && \\normalsize {:,} && \\normalsize {:,} \\cr""" \
                             .format(pname.replace(" ",",").upper(), self.confDF.loc[rowIdx,provinceNamesDF.columns[-1]],self.dtsDF.loc[rowIdx,provinceNamesDF.columns[-1]])
         else:
             outputStr += "No Province Info Available"
